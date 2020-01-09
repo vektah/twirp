@@ -60,6 +60,14 @@ func (errorResponeWriter) Write([]byte) (int, error) {
 	return 0, fmt.Errorf("this is only a test")
 }
 
+func TestSetMeta(t *testing.T) {
+	err := NewError(Internal, "blah")
+	err.SetMeta("foo", "bar")
+	if err.Meta("foo") != "bar" {
+		t.Errorf("meta key was not set")
+	}
+}
+
 func TestWriteError(t *testing.T) {
 	resp := httptest.NewRecorder()
 	twerr := NewError(Internal, "test middleware error")

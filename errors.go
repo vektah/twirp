@@ -60,6 +60,10 @@ type Error interface {
 	// as metadata. If the key is already set, it is overwritten.
 	WithMeta(key string, val string) Error
 
+	// SetMeta sets the key into this errors metadata. If the key is already set,
+	// it is overwritten.
+	SetMeta(key string, val string)
+
 	// Meta returns the stored value for the given key. If the key has no set
 	// value, Meta returns an empty string. There is no way to distinguish between
 	// an unset value and an explicit empty string.
@@ -298,6 +302,15 @@ type twerr struct {
 	meta map[string]string
 }
 
+// SetMeta sets the key into this errors metadata. If the key is already set,
+// it is overwritten.
+func (e *twerr) SetMeta(key string, val string) {
+	if e.meta == nil {
+		e.meta = map[string]string{}
+	}
+	e.meta[key] = val
+}
+
 func (e *twerr) Code() ErrorCode { return e.code }
 func (e *twerr) Msg() string     { return e.msg }
 
@@ -350,7 +363,8 @@ func (e *wrappedErr) WithMeta(key string, val string) Error {
 		cause:   e.cause,
 	}
 }
-func (e *wrappedErr) Cause() error { return e.cause }
+func (e *wrappedErr) SetMeta(key string, val string) { e.wrapper.SetMeta(key, val) }
+func (e *wrappedErr) Cause() error                   { return e.cause }
 
 // WriteError writes an HTTP response with a valid Twirp error format (code, msg, meta).
 // Useful outside of the Twirp server (e.g. http middleware).
